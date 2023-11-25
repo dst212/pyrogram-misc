@@ -134,6 +134,18 @@ async def can_send_to(bot, user: Union[User, int]) -> bool:
     return False
 
 
+def chat_type(bot, item: Union[Chat, Message, InlineQuery, CallbackQuery]):
+    if isinstance(item, Message):
+        return item.chat.type
+    if isinstance(item, InlineQuery):
+        return item.chat_type
+    if isinstance(item, CallbackQuery):
+        return item.message.chat.type if item.message else None
+    if isinstance(item, Chat):
+        return item.type
+    return None
+
+
 async def quick_answer(query, text, parameter):
     await query.answer(
         [],
