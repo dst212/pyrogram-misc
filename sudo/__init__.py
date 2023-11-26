@@ -59,7 +59,7 @@ def init(
             "Please, contact @dst212 for further information."
         )
 
-        async def report_error(bot, item):
+        async def report_error(bot, item, exception: Exception = None):
             # Report an error to the log chats
             traceback.print_exc()
             output = item

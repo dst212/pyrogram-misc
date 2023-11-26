@@ -187,8 +187,8 @@ def try_run_decorator(actual_decorator, handle_error):
             async def catcher(*args, **kwargs):
                 try:
                     await fun(*args, **kwargs)
-                except Exception:
-                    await handle_error(*args, **kwargs)
+                except Exception as e:
+                    await handle_error(*args, **kwargs, exception=e)
             # Turning on_message into an auto-reporter if exceptions occurr
             return actual_decorator(*dargs, **dkwargs)(catcher)
         return wrapper
