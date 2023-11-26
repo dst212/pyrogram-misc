@@ -2,7 +2,7 @@ import asyncio
 import html
 import logging
 
-from typing import Union
+from typing import Union, Callable
 
 from pyrogram import filters
 from pyrogram.enums import ChatType, ChatMemberStatus, ChatAction
@@ -155,20 +155,28 @@ async def quick_answer(query, text, parameter):
     )
 
 
-# Retry sending messages waiting for FloodWait limitations
-async def try_sending(bot, chat: int, *args, **kwargs) -> bool:
+# Retry performing a specific task waiting for FloodWait limitations
+async def try_wait(func: Callable, *args, **kwargs) -> bool:
     ok = False
     while not ok:
         try:
-            await bot.send_message(chat, *args, **kwargs)
+            await func(*args, **kwargs)
             ok = True
         except FloodWait as e:
-            log.info(f"Waiting {e.value + 10} seconds before sending again...")
-            await asyncio.sleep(e.value + 10)
+            log.info(f"Waiting {e.value + 5} seconds before sending again...")
+            await asyncio.sleep(e.value + 5)
         except Exception as e:
-            log.info(f"Couldn't sent message to {chat}: {e}")
+            log.info(
+                "Couldn't sent message to"
+                f" {kwargs.get('chat') or args[0] if len(args) > 0 else '?'}: {e}"
+            )
             return False
     return True
+
+
+# Retry sending messages waiting for FloodWait limitations
+async def try_sending(bot, *args, **kwargs) -> bool:
+    return await try_wait(bot.send_message, *args, **kwargs)
 
 
 # Decorator to handle errors in a nicer way, usage:
