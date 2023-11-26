@@ -1,5 +1,6 @@
-from ..fun import format_chat, chat_name, quick_answer, try_sending, try_run_decorator
+from ..fun import format_chat, chat_name, quick_answer, try_wait, try_run_decorator
 
+import asyncio
 import html
 import logging
 import sys
@@ -27,6 +28,7 @@ def init(
     commands: dict[str, Callable] = {},
     handle_error: bool = True,
     prefix: str = None,
+    get_chats: Callable = None,
 ):
     # Set global log variable
     global log
@@ -40,8 +42,8 @@ def init(
             if isinstance(chat, Iterable):
                 chat, reply_to_message_id = chat[0], chat[1]
             if chat not in exclude:
-                await try_sending(
-                    bot, chat, text, reply_to_message_id=reply_to_message_id
+                await try_wait(
+                    bot.send_message, chat, text, reply_to_message_id=reply_to_message_id
                 )
 
     log = _
@@ -108,9 +110,37 @@ def init(
         logger.info("Restarting the bot...")
         execl(sys.executable, sys.executable, *sys.argv)
 
+    async def fun_spam(bot, m):
+        if not get_chats:
+            await m.reply("No list of users provided.")
+            return
+        if not (
+                m.reply_to_message and
+                (m.reply_to_message.text or m.reply_to_message.media)
+        ):
+            await m.reply(
+                "Reply to the message you want to broadcast.\n"
+                "Once you send the message, you won't be able to edit it."
+            )
+            return
+        chats = tuple(get_chats())
+        count = 0
+        i = 0
+        message_link = f"<a href=\"{m.reply_to_message.link}\">this message</a>"
+        r = await m.reply(f"Sending {message_link} ({i}/{len(chats)})...")
+        for u in chats:
+            i += 1
+            if await try_wait(bot.copy_message, u, m.chat.id, m.reply_to_message_id):
+                count += 1
+            await asyncio.sleep(1)
+            await r.edit(f"Sending {message_link} ({i}/{len(chats)})...")
+        await r.edit(f"Sent {message_link} to {count}/{len(chats)} chats.")
+
     default = {
         "explode": fun_explode,
         "restart": fun_restart,
+        "spam": fun_spam,
+        "broadcast": fun_spam,
     }
 
     # Check overrides and enable prefixed commands
