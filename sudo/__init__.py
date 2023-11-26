@@ -130,10 +130,11 @@ def init(
         r = await m.reply(f"Sending {message_link} ({i}/{len(chats)})...")
         for u in chats:
             i += 1
-            if await try_wait(bot.copy_message, u, m.chat.id, m.reply_to_message_id):
+            if await try_wait(m.reply_to_message.copy, u):
                 count += 1
             await asyncio.sleep(1)
-            await r.edit(f"Sending {message_link} ({i}/{len(chats)})...")
+            await try_wait(r.edit, f"Sending {message_link} ({i}/{len(chats)})...")
+            await asyncio.sleep(1)
         await r.edit(f"Sent {message_link} to {count}/{len(chats)} chats.")
 
     default = {
