@@ -26,7 +26,7 @@ def init(
     admins: list[int] = [],
     log_chats: list[Union[int, str, list[int]]] = [],
     commands: dict[str, Callable] = {},
-    handle_error: bool = True,
+    error_message: str = None,
     prefix: str = None,
     get_chats: Callable = None,
 ):
@@ -52,12 +52,8 @@ def init(
     logger = logging.getLogger(__name__)
     logger.info("Initializing sudo...")
 
-    if handle_error:
+    if error_message:
         logger.info("Enabling error handling...")
-        error_message = (
-            "An error occurred.\n"
-            "Please, contact @dst212 for further information."
-        )
 
         async def report_error(bot, item, exception: Exception = None):
             # Report an error to the log chats
