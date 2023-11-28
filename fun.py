@@ -192,3 +192,14 @@ def try_run_decorator(actual_decorator, handle_error):
             return actual_decorator(*dargs, **dkwargs)(catcher)
         return wrapper
     return decorator
+
+
+# Send a message and edit it n times counting down
+async def countdown(func: Callable, n, text, delete=True, *args, **kwargs):
+    m = await func(text.format(n), *args, **kwargs)
+    for i in range(n - 1, -1, -1):
+        await asyncio.sleep(1)
+        m = await try_wait(m.edit, text.format(i))
+        if not m:
+            return
+    await m.delete()
