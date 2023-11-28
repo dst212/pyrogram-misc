@@ -156,22 +156,21 @@ async def quick_answer(query, text, parameter):
 
 
 # Retry performing a specific task waiting for FloodWait limitations
-async def try_wait(func: Callable, *args, **kwargs) -> bool:
+async def try_wait(func: Callable, *args, **kwargs):
     ok = False
     while not ok:
         try:
-            await func(*args, **kwargs)
-            ok = True
+            ok = await func(*args, **kwargs) or True
         except FloodWait as e:
             log.info(f"Waiting {e.value + 5} seconds before sending again...")
             await asyncio.sleep(e.value + 5)
         except Exception as e:
             log.info(
-                "Couldn't sent message to"
+                "Couldn't send message to"
                 f" {kwargs.get('chat') or args[0] if len(args) > 0 else '?'}: {e}"
             )
             return False
-    return True
+    return ok
 
 
 # Retry sending messages waiting for FloodWait limitations
