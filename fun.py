@@ -4,7 +4,7 @@ import logging
 
 from typing import Union, Callable
 
-from pyrogram import filters
+from pyrogram import filters, ContinuePropagation, StopPropagation
 from pyrogram.enums import ChatType, ChatMemberStatus, ChatAction
 from pyrogram.types import (
     Chat, User,
@@ -186,6 +186,8 @@ def try_run_decorator(actual_decorator, handle_error):
             async def catcher(*args, **kwargs):
                 try:
                     await fun(*args, **kwargs)
+                except (ContinuePropagation, StopPropagation) as e:
+                    raise e
                 except Exception as e:
                     await handle_error(*args, **kwargs, exception=e)
             # Turning on_message into an auto-reporter if exceptions occurr
