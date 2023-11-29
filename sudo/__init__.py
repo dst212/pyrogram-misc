@@ -27,7 +27,7 @@ def init(
     log_chats: list[Union[int, str, list[int]]] = [],
     commands: dict[str, Callable] = {},
     error_message: str = None,
-    prefix: str = None,
+    prefix: Union[str, list[str]] = None,
     get_chats: Callable = None,
 ):
     # Set global log variable
@@ -152,10 +152,11 @@ def init(
 
     # Enable prefixed custom sub-commands
     for cmd in commands:
-        @bot.on_message(filters.user(admins) & filters.command(cmd))
-        async def _(bot, m):
-            await commands[cmd](bot, m)
-        logger.info(f"Registered {cmd} sub-command.")
+        if prefix:
+            bot.on_message(
+                filters.user(admins) & filters.command(cmd, prefixes=prefix)
+            )(commands[cmd])
+            logger.info(f"Registered {cmd} sub-command.")
 
     async def not_recognized(bot, m):
         await m.reply(f"Command <code>{m.command[1]}</code> not recognized.")
