@@ -155,6 +155,24 @@ async def quick_answer(query, text, parameter):
     )
 
 
+async def _(f, b, m):
+    r = m.reply_to_message
+    return r and r.from_user and r.from_user.is_self and r.reply_markup
+
+
+reply_to_buttons = filters.create(_, "reply_to_buttons")
+
+
+# Get the callback data of the first inline button
+def button_args(m, startswith: str = None):
+    if not (m and m.from_user and m.from_user.is_self and m.reply_markup):
+        return []
+    data = m.reply_markup.inline_keyboard[0][0].callback_data
+    if startswith and not (data and data.startswith(startswith)):
+        return []
+    return data.split(" ")
+
+
 # Retry performing a specific task waiting for FloodWait limitations
 async def try_wait(func: Callable, *args, **kwargs):
     ok = False
