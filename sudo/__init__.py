@@ -15,6 +15,8 @@ from pyrogram.types import (
     Message, CallbackQuery, InlineQuery,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def log(*_, **__):
     pass
@@ -24,7 +26,7 @@ def init(
     bot,
     name: Union[str, list[str]] = "sudo",
     admins: list[int] = [],
-    log_chats: list[Union[int, str, list[int]]] = [],
+    log_chat: list[Union[int, str, list[int]]] = None,
     commands: dict[str, Callable] = {},
     error_message: str = None,
     prefix: Union[str, list[str]] = None,
@@ -33,24 +35,21 @@ def init(
     # Set global log variable
     global log
 
-    async def _(
-        text: str,
-        exclude: Iterable[Union[int, Iterable[int]]] = []
-    ):
-        for chat in log_chats:
-            reply_to_message_id = None
-            if isinstance(chat, Iterable):
-                chat, reply_to_message_id = chat[0], chat[1]
-            if chat not in exclude:
-                await try_wait(
-                    bot.send_message, chat, text, reply_to_message_id=reply_to_message_id
-                )
+    # Initialize error handling and sub-commands
+    logger.info("Initializing sudo...")
+
+    async def _(text: str):
+        if not log_chat:
+            logger.info(f"message: {text}")
+            return
+        reply_to_message_id = None
+        if isinstance(log_chat, Iterable):
+            chat, reply_to_message_id = log_chat[0], log_chat[1]
+        await try_wait(
+            bot.send_message, chat, text, reply_to_message_id=reply_to_message_id
+        )
 
     log = _
-
-    # Initialize error handling and sub-commands
-    logger = logging.getLogger(__name__)
-    logger.info("Initializing sudo...")
 
     if error_message:
         logger.info("Enabling error handling...")
@@ -101,8 +100,7 @@ def init(
         sender = m.from_user or m.sender_chat
         await m.reply("Restarting the bot.")
         logger.info(f"[{sender.id}] {chat_name(sender)} restarted the bot.")
-        for chat in log_chats:
-            await log(f"{format_chat(sender)} restarted the bot.")
+        await log(f"{format_chat(sender)} restarted the bot.")
         logger.info("Restarting the bot...")
         execl(sys.executable, sys.executable, *sys.argv)
 
