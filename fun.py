@@ -223,3 +223,30 @@ async def countdown(func: Callable, n, text, delete=True, *args, **kwargs):
         if not m:
             return
     await m.delete()
+
+
+# Copy a message to another chat while also editing the text
+async def edit_copy(bot, m: Message, chat_id: int, prefix: str = "", suffix: str = "", **kwargs):
+    next_text = ""
+    func, text = (
+        bot.send_message,
+        {"text": f"{prefix}{m.text.html}{suffix}"},
+    ) if m.text else (
+        m.copy,
+        {"caption": f"{prefix}{m.caption.html}{suffix}" if m.caption else f"{prefix}{suffix}"},
+    )
+    if m.text and len(text) > 4096:
+        text, next_text = f"{text[:4093]}...", f"...{text[4093:]}".strip()
+    elif m.caption and len(text) > 1024:
+        text, next_text = f"{text[:1021]}...", f"...{text[1021:]}".strip()
+    r = await func(
+        chat_id,
+        **text,
+        **kwargs,
+    )
+    if next_text:
+        try:
+            await bot.send_message(chat_id, next_text, reply_to_message_id=r.id)
+        except Exception as e:
+            print(e)
+    return r
