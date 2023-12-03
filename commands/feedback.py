@@ -159,20 +159,16 @@ class Init:
                 await m.reply(str_feedback_help)
                 return
             r = await m.reply(str_feedback_sending)
-            chat, rtmi = (
-                (support_chat[0], support_chat[1]) if isinstance(support_chat, Iterable) else
-                (support_chat, None)
-            )
             sent = await edit_copy(
                 bot,
                 m,
-                chat,
+                support_chat,
                 prefix=f"<b>Feedback from {format_chat(m)}:</b>\n\n",
-                reply_to_message_id=rtmi,
+                reply_to_message_id=support_topic,
                 reply_markup=admin_reply_button(m.chat.id, m.id),
             )
             if m.reply_to_message:
-                await m.reply_to_message.copy(chat, reply_to_message_id=sent.id)
+                await m.reply_to_message.copy(support_chat, reply_to_message_id=sent.id)
             await r.edit(str_feedback_sent)
 
         # Send feedback by replying
