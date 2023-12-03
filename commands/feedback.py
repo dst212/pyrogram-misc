@@ -32,7 +32,7 @@ class Init:
         support_chat: Union[int, Iterable[int]],
         # Feedback-related stuff
         name: Union[str, list[str]] = "feedback",
-        str_feedback_help: str = (
+        str_help: str = (
             "Provide a feedback alongside the command.\n\n"
             "Examples:\n"
             "<code>/feedback can you add cookies?</code>\n"
@@ -41,8 +41,8 @@ class Init:
             "<i>Bot developers are human beings too.\n"
             "Don't harass them. Be kind and respectful, please.</i>"
         ),
-        str_feedback_sending: str = "Sending the feedback...",
-        str_feedback_sent: str = (
+        str_sending: str = "Sending the feedback...",
+        str_sent: str = (
             "The feedback was sent, thank you!\n"
             "You may get a reply. Please, be patient."
         )
@@ -156,9 +156,9 @@ class Init:
         @bot.on_message(filters.private & (filters.command(name)))
         async def _(bot, m):
             if len(m.command) == 1 and not m.reply_to_message:
-                await m.reply(str_feedback_help)
+                await m.reply(str_help)
                 return
-            r = await m.reply(str_feedback_sending)
+            r = await m.reply(str_sending)
             sent = await edit_copy(
                 bot,
                 m,
@@ -169,7 +169,7 @@ class Init:
             )
             if m.reply_to_message:
                 await m.reply_to_message.copy(support_chat, reply_to_message_id=sent.id)
-            await r.edit(str_feedback_sent)
+            await r.edit(str_sent)
 
         # Send feedback by replying
         @bot.on_message(filters.private & reply_to_buttons & filters.regex(r"^(?!\/)"))
