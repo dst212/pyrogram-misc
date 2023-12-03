@@ -117,7 +117,7 @@ async def can_delete(chat: Union[Chat, Message], who="me") -> bool:
     if chat.type == ChatType.PRIVATE:
         return True
     user = await chat.get_member(who)
-    return user.privileges.can_delete_messages if user else None
+    return user.privileges.can_delete_messages if user and user.privileges else None
 
 
 async def can_send_to(bot, user: Union[User, int]) -> bool:
