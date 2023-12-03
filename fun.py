@@ -8,7 +8,10 @@ from pyrogram import filters, ContinuePropagation, StopPropagation
 from pyrogram.enums import ChatType, ChatMemberStatus, ChatAction
 from pyrogram.types import (
     Chat, User,
-    Message, CallbackQuery, InlineQuery,
+    Message,
+    CallbackQuery,
+    InlineQuery,
+    InlineKeyboardMarkup,
     ChatPrivileges,
 )
 from pyrogram.errors import FloodWait
@@ -157,7 +160,7 @@ async def quick_answer(query, text, parameter):
 
 async def _(f, b, m):
     r = m.reply_to_message
-    return r and r.from_user and r.from_user.is_self and r.reply_markup
+    return r and r.from_user and r.from_user.is_self and isinstance(r.reply_markup, InlineKeyboardMarkup)
 
 
 reply_to_buttons = filters.create(_, "reply_to_buttons")
