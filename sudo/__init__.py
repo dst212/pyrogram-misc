@@ -132,6 +132,7 @@ class SudoConfig:
         get_chats: Callable = None,
         # Enable error handling on the go instead of calling handle_errors()
         error_message: str = None,
+        error_message_short: str = None,
     ):
         self.bot = bot
         self.name = name
@@ -144,7 +145,10 @@ class SudoConfig:
         self.prefix = prefix
         self.get_chats = get_chats
         if error_message:
-            self.handle_errors(error_message)
+            self.handle_errors(error_message, error_message_short)
+        else:
+            self.error_message = "An error occurred."
+            self.error_message_short = self.error_message
 
         self.fun = SubCommandsFunctions(self)
 
@@ -161,47 +165,49 @@ class SudoConfig:
         else:
             log.info(f"message: {text}")
 
+    async def report_error(self, bot, item, exception: Exception = None):
+        # Report an error to the log chats
+        traceback.print_exc()
+        output = item
+        user, chat = None, None
+        if isinstance(item, Message):
+            await item.reply(self.error_message)
+            output = item.text or item.caption or "[Media]"
+            user = item.from_user or item.sender_chat
+            chat = item.chat
+        elif isinstance(item, CallbackQuery):
+            await item.answer(self.error_message, show_alert=True)
+            output = item.data
+            user = item.from_user
+            chat = item.message.chat if item.message else "somewhere"
+        elif isinstance(item, InlineQuery):
+            await quick_answer(item, self.error_message_short, "h")
+            output = item.query
+            user = item.from_user
+            chat = item.chat_type
+        exc = traceback.format_exc()
+        if len(exc) > 3500:
+            exc = f"{exc[:200]}...\n\n...\n\n...{exc[-300:]}"
+        await self.log(
+            f"An exception occurred to {format_chat(user)} in"
+            f" {format_chat(chat)}:\n\n"
+            f"<pre language=\"log\">{html.escape(exc)}</pre>\n\n"
+            f"{type(item).__name__}:\n"
+            f"<code>{html.escape(output)}</code>"
+        )
+
     def handle_errors(
         self,
         text: str = "An error occurred.",
         text_short: str = "An error occurred.",
     ):
         log.info("Enabling error handling...")
-
-        async def report_error(bot, item, exception: Exception = None):
-            # Report an error to the log chats
-            traceback.print_exc()
-            output = item
-            user, chat = None, None
-            if isinstance(item, Message):
-                await item.reply(text)
-                output = item.text or item.caption or "[Media]"
-                user = item.from_user or item.sender_chat
-                chat = item.chat
-            elif isinstance(item, CallbackQuery):
-                await item.answer(text, show_alert=True)
-                output = item.data
-                user = item.from_user
-                chat = item.message.chat if item.message else "somewhere"
-            elif isinstance(item, InlineQuery):
-                await quick_answer(item, text_short, "h")
-                output = item.query
-                user = item.from_user
-                chat = item.chat_type
-            exc = traceback.format_exc()
-            if len(exc) > 3500:
-                exc = f"{exc[:200]}...\n\n...\n\n...{exc[-300:]}"
-            await self.log(
-                f"An exception occurred to {format_chat(user)} in"
-                f" {format_chat(chat)}:\n\n"
-                f"<pre language=\"log\">{html.escape(exc)}</pre>\n\n"
-                f"{type(item).__name__}:\n"
-                f"<code>{html.escape(output)}</code>"
-            )
+        self.error_message = text
+        self.error_message_short = text_short
 
         self.bot.on_message = try_run_decorator(
-            self.bot.on_message, report_error)
+            self.bot.on_message, self.report_error)
         self.bot.on_callback_query = try_run_decorator(
-            self.bot.on_callback_query, report_error)
+            self.bot.on_callback_query, self.report_error)
         self.bot.on_inline_query = try_run_decorator(
-            self.bot.on_inline_query, report_error)
+            self.bot.on_inline_query, self.report_error)
