@@ -1,6 +1,7 @@
 import asyncio
 import html
 import logging
+import re
 
 from typing import Union, Callable
 
@@ -156,6 +157,14 @@ async def quick_answer(query, text, parameter):
         switch_pm_parameter=parameter,
         cache_time=1,
     )
+
+
+# Regex for chosen inline results
+def query_match(query):
+    async def func(f, _, result):
+        return re.match(f.query, result.query)
+
+    return filters.create(func, query=query)
 
 
 async def _(f, b, m):
