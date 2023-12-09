@@ -244,7 +244,8 @@ async def countdown(func: Callable, n, text, delete=True, *args, **kwargs):
         m = await try_wait(m.edit, text.format(i))
         if not m:
             return
-    await m.delete()
+    if delete:
+        await m.delete()
 
 
 # Copy a message to another chat while also editing the text
