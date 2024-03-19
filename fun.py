@@ -167,6 +167,19 @@ def query_match(query):
     return filters.create(func, query=query)
 
 
+# There's a button matching the specified callback_data
+def has_button(data, row=0, col=0):
+    async def func(f, _, message):
+        rm = message.reply_markup
+        return (
+            isinstance(rm, InlineKeyboardMarkup) and
+            len(rm.inline_keyboard) > f.row and
+            len(rm.inline_keyboard[f.row]) > f.col and
+            re.match(f.data, (rm.inline_keyboard[f.row][f.col]).callback_data or "")
+        )
+    return filters.create(func, data=data, row=row, col=col)
+
+
 async def _(f, b, m):
     r = m.reply_to_message
     return r and r.from_user and r.from_user.is_self and isinstance(r.reply_markup, InlineKeyboardMarkup)
