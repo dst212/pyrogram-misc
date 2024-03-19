@@ -11,4 +11,6 @@ def init(bot, name: str = "id"):
             f"<b>Message:</b> <code>{m.id}</code>\n"
             + (f"<b>Reply to:</b> <code>{m.reply_to_message_id}</code>"
                 if m.reply_to_message_id else "")
+            + (f"<b>Top message:</b> <code>{m.reply_to_top_message_id}</code>"
+                if m.reply_to_top_message_id else "")
         )
