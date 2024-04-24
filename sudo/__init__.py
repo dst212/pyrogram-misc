@@ -35,6 +35,7 @@ class SubCommandsFunctions:
             "restart": self.restart,
             "spam": self.spam,
             "broadcast": self.spam,
+            "move": self.move,
         }
         # Check overrides and enable prefixed commands
         for cmd in self.list:
@@ -110,6 +111,13 @@ class SubCommandsFunctions:
             await try_wait(r.edit, f"Sending {message_link} ({i}/{len(chats)})...")
             await asyncio.sleep(1)
         await r.edit(f"Sent {message_link} to {count}/{len(chats)} chats.")
+
+    async def move(self, bot, m):
+        if m.reply_to_message and m.reply_to_message.from_user and m.reply_to_message.from_user.is_self:
+            await m.reply_to_message.copy(
+                m.chat.id,
+                reply_to_message_id=int(m.command[-1]) if m.command[-1].isnumeric() else None,
+            )
 
     async def not_recognized(self, bot, m):
         await m.reply(f"Command <code>{m.command[1]}</code> not recognized.")
