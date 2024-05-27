@@ -21,6 +21,7 @@ from pyrogram.types import (
     Message,
     CallbackQuery,
     InlineQuery,
+    ChosenInlineResult,
 )
 
 log = logging.getLogger(__name__)
@@ -194,7 +195,7 @@ class SudoConfig:
     async def report_error(self, bot, item, exception: Exception = None):
         # Report an error to the log chats
         traceback.print_exc()
-        output = item
+        output = f"{item}"
         user, chat = None, None
         if isinstance(item, Message):
             await item.reply(self.error_message)
@@ -211,6 +212,10 @@ class SudoConfig:
             output = item.query
             user = item.from_user
             chat = item.chat_type
+        elif isinstance(item, ChosenInlineResult):
+            output = f"[{item.result_id}]: {item.query}"
+            user = item.from_user
+            chat = "somewhere"
         exc = traceback.format_exc()
         if len(exc) > 3500:
             exc = f"{exc[:200]}...\n\n...\n\n...{exc[-300:]}"
