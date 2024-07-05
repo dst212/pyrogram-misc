@@ -242,3 +242,5 @@ class SudoConfig:
             self.bot.on_callback_query, self.report_error)
         self.bot.on_inline_query = try_run_decorator(
             self.bot.on_inline_query, self.report_error)
+        self.bot.on_chosen_inline_result = try_run_decorator(
+            self.bot.on_chosen_inline_result, self.report_error)
