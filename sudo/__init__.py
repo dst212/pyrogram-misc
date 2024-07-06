@@ -37,7 +37,7 @@ class SubCommandsFunctions:
             "send": self.send,
             "spam": self.spam,
             "broadcast": self.spam,
-            "move": self.move,
+            "copy": self.copy,
         }
         # Check overrides and enable prefixed commands
         for cmd in self.list:
@@ -133,7 +133,7 @@ class SubCommandsFunctions:
         await m.reply(f"Syntax:\n\n<code>/{self.cfg.name} {args[0]} "
                       "&lt;chat/reply_to_message&gt; [text]</code>")
 
-    async def move(self, bot, m):
+    async def copy(self, bot, m):
         if m.reply_to_message and m.reply_to_message.from_user and m.reply_to_message.from_user.is_self:
             await m.reply_to_message.copy(
                 m.chat.id,
