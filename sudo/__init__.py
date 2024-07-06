@@ -9,7 +9,13 @@ from ..fun import (
 import asyncio
 import html
 import logging
+import os
+try:
+    import psutil
+except ImportError:
+    psutil = None
 import sys
+import time
 import traceback
 
 from os import execl
@@ -27,6 +33,19 @@ from pyrogram.types import (
 log = logging.getLogger(__name__)
 
 
+def format_time(time) -> str:
+    upt = int(time)
+    upt = [upt % 60, upt // 60, 0, 0]
+    upt[1], upt[2] = upt[1] % 60, upt[1] // 60
+    upt[2], upt[3] = upt[2] % 24, upt[2] // 24
+    return (
+        (f"{upt[3]}d " if upt[3] else "")
+        + (f"{upt[2]}h " if upt[2] or upt[3] else "")
+        + (f"{upt[1]}m " if upt[1] or upt[2] or upt[3] else "")
+        + f"{upt[0]}s"
+    )
+
+
 # Default sub-commands
 class SubCommandsFunctions:
     def __init__(self, cfg):
@@ -34,11 +53,13 @@ class SubCommandsFunctions:
         self.list = {
             "explode": self.explode,
             "restart": self.restart,
+            "info": self.info,
             "send": self.send,
             "spam": self.spam,
             "broadcast": self.spam,
             "copy": self.copy,
         }
+        self._p = psutil.Process() if psutil else None
         # Check overrides and enable prefixed commands
         for cmd in self.list:
             if self.cfg.commands.get(cmd):
@@ -85,7 +106,24 @@ class SubCommandsFunctions:
         log.info(f"[{sender.id}] {chat_name(sender)} restarted the bot.")
         await self.cfg.log(f"{format_chat(sender)} restarted the bot.")
         log.info("Restarting the bot...")
-        execl(sys.executable, sys.executable, *sys.argv)
+        os.execl(sys.executable, sys.executable, *sys.argv)
+
+    async def info(self, bot, m):
+        create_time = self._p.create_time() if self._p else 0
+        await m.reply(
+            "<b>.•°• System information •°•.</b>\n\n"
+            f"<i>Python path:</i> <code>{html.escape(sys.executable)}</code>\n"
+            "<i>Python version:</i> "
+            f"<code>{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} "
+            f"({sys.implementation._multiarch})</code>\n"
+            f"<i>Process:</i> [</code><code>{os.getpid()}</code><code>] "
+            f"<code>{html.escape(" ".join(sys.argv))}</code>\n" +
+            (f"<i>Memory:</i> <code>{round(self._p.memory_full_info().uss/1048576, 3)}MiB</code>\n"
+             "\n"
+             f"<i>Uptime:</i> <code>{format_time(time.time() - create_time)}</code>\n"
+             f"<i>Running since {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(create_time))}.</i>"
+             if self._p else "")
+        )
 
     async def spam(self, bot, m):
         if not self.cfg.get_chats:
