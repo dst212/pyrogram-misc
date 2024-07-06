@@ -115,21 +115,23 @@ class SubCommandsFunctions:
         await r.edit(f"Sent {message_link} to {count}/{len(chats)} chats.")
 
     async def send(self, bot, m):
-        args = m.command[:] if m.command[0] == "send" else m.command[1:]
+        args = m.command[1:] if m.command[0].startswith(self.cfg.name) else m.command[:]
         if len(args) > 1:
             chat, rtmi, *_ = (*args[1].split("/"), None)
             try:
-                chat = int(chat)
-                rtmi = int(rtmi) if rtmi.isnumeric() else None
+                chat = await bot.get_chat(chat)
+                rtmi = int(rtmi) if rtmi and rtmi.isnumeric() else None
                 if m.reply_to_message and (m.reply_to_message.text or m.reply_to_message.media):
                     await m.reply_to_message.copy(chat, reply_to_message_id=rtmi)
                 else:
-                    await bot.send_message(chat, " ".join(args[2:]) or "⁭ ", reply_to_message_id=rtmi)
+                    await bot.send_message(chat.id, " ".join(args[2:]) or "⁭", reply_to_message_id=rtmi)
+                await m.reply(f"Message sent to {format_chat(chat)}.")
                 return
             except ValueError as e:
                 print(e)
                 pass
-        await m.reply(f"Syntax:\n\n<code>{m.command[0]} &lt;chat/reply_to_message&gt; [text]</code>")
+        await m.reply(f"Syntax:\n\n<code>/{self.cfg.name} {args[0]} "
+                      "&lt;chat/reply_to_message&gt; [text]</code>")
 
     async def move(self, bot, m):
         if m.reply_to_message and m.reply_to_message.from_user and m.reply_to_message.from_user.is_self:
