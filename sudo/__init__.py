@@ -18,8 +18,7 @@ import sys
 import time
 import traceback
 
-from os import execl
-from typing import Callable, Iterable, Union
+from typing import Callable, Iterable
 
 
 from pyrogram import filters
@@ -227,10 +226,10 @@ class SudoConfig:
     def __init__(
         self,
         bot,
-        name: Union[str, list[str]] = "sudo",
-        prefix: Union[str, list[str]] = None,
+        name: (str | list[str]) = "sudo",
+        prefix: (str | list[str]) = None,
         admins: list[int] = [],
-        log_chat: list[Union[int, str, list[int]]] = None,
+        log_chat: list[(int | str | list[int])] = None,
         # User defined sub-commands
         commands: dict[str, Callable] = {},
         # Function returning bot's users
@@ -295,6 +294,7 @@ class SudoConfig:
             user = item.from_user
             chat = "somewhere"
         exc = traceback.format_exc()
+        # TODO: better handling of the output if exceeding the available length
         if len(exc) > 3500:
             exc = f"{exc[:200]}...\n\n...\n\n...{exc[-300:]}"
         await self.log(

@@ -3,7 +3,7 @@ import html
 import logging
 import re
 
-from typing import Union, Callable
+from typing import Callable
 
 from pyrogram import filters, ContinuePropagation, StopPropagation
 from pyrogram.enums import ChatType, ChatMemberStatus, ChatAction
@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 
 # User output formatting
 def format_chat(
-        item: Union[Message, CallbackQuery, InlineQuery, User, Chat],
+        item: (Message | CallbackQuery | InlineQuery | User | Chat),
         text: str = None,
 ) -> str:
     if item is None:
@@ -37,7 +37,7 @@ def format_chat(
 
 
 def chat_link(
-    item: Union[Message, CallbackQuery, InlineQuery, User, Chat],
+    item: (Message | CallbackQuery | InlineQuery | User | Chat),
     text: str = None,
 ) -> str:
     if item is None:
@@ -65,7 +65,7 @@ def chat_link(
     return text
 
 
-def chat_name(chat: Union[Chat, User], show_username=True) -> str:
+def chat_name(chat: (Chat | User), show_username=True) -> str:
     if type(chat) not in (Chat, User):
         return str(chat)
     return (
@@ -76,8 +76,8 @@ def chat_name(chat: Union[Chat, User], show_username=True) -> str:
 
 # Some bool flags
 async def is_admin(
-    m: Union[Message, CallbackQuery]
-) -> Union[bool, ChatPrivileges]:
+    m: (Message | CallbackQuery),
+) -> (bool | ChatPrivileges):
     user = None
     if isinstance(m, CallbackQuery):
         user = m.from_user
@@ -101,7 +101,7 @@ async def _(f, b, m):
 from_admin = filters.create(_, "admin")
 
 
-async def is_member(user: Union[User, int], chat: Chat) -> bool:
+async def is_member(user: (User | int), chat: Chat) -> bool:
     if isinstance(user, User):
         user = user.id
     return (
@@ -115,7 +115,7 @@ async def is_member(user: Union[User, int], chat: Chat) -> bool:
     )
 
 
-async def can_delete(chat: Union[Chat, Message], who="me") -> bool:
+async def can_delete(chat: (Chat | Message), who="me") -> bool:
     if isinstance(chat, Message):
         chat = chat.chat
     if chat.type == ChatType.PRIVATE:
@@ -124,7 +124,7 @@ async def can_delete(chat: Union[Chat, Message], who="me") -> bool:
     return user.privileges.can_delete_messages if user and user.privileges else None
 
 
-async def can_send_to(bot, user: Union[User, int]) -> bool:
+async def can_send_to(bot, user: (User | int)) -> bool:
     if isinstance(user, User):
         user = user.id
     elif not isinstance(user, int):
@@ -138,7 +138,7 @@ async def can_send_to(bot, user: Union[User, int]) -> bool:
     return False
 
 
-def chat_type(bot, item: Union[Chat, Message, InlineQuery, CallbackQuery]):
+def chat_type(bot, item: (Chat | Message | InlineQuery | CallbackQuery)):
     if isinstance(item, Message):
         return item.chat.type
     if isinstance(item, InlineQuery):

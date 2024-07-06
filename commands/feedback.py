@@ -10,7 +10,7 @@ from ..fun import (
 
 import asyncio
 
-from typing import Union, Iterable
+from typing import Iterable
 
 from pyrogram import filters
 from pyrogram.errors import MessageNotModified
@@ -29,9 +29,9 @@ class Init:
         self,
         bot,
         sudo,
-        support_chat: Union[int, Iterable[int]],
+        support_chat: (int | Iterable[int]),
         # Feedback-related stuff
-        name: Union[str, list[str]] = "feedback",
+        name: (str | list[str]) = "feedback",
         str_help: str = (
             "Provide a feedback alongside the command.\n\n"
             "Examples:\n"
