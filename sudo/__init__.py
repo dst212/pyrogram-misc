@@ -29,6 +29,7 @@ from pyrogram.types import (
     InlineQuery,
     ChosenInlineResult,
 )
+from pyrogram.errors import UserNotParticipant
 
 log = logging.getLogger(__name__)
 
@@ -58,6 +59,7 @@ class SubCommandsFunctions:
             "spam": self.spam,
             "broadcast": self.spam,
             "copy": self.copy,
+            "leave": self.leave,
         }
         self._p = psutil.Process() if psutil else None
         # Check overrides and enable prefixed commands
@@ -89,6 +91,16 @@ class SubCommandsFunctions:
         @self.cfg.bot.on_message(filters.command(self.cfg.name))
         async def _(bot, m):
             await m.reply("Woodo?")
+
+    # "My job here is done" sticker
+    @property
+    def job_done(self):
+        return "CAACAgQAAx0CWzSgSwACAu9jQbY6q1CWFVYmvd9oLvr9lTjDowADBAAC4VO0Gkg-S0vXzYliHgQ"
+
+    # "Swossh" sticker
+    @property
+    def swoosh(self):
+        return "CAACAgQAAx0CWzSgSwACAvBjQbY8ekRMaHdcyGcZbTjcuEpQvwACAgQAAuFTtBrgVhKngYV6YB4E"
 
     def get(self, name):
         return (
@@ -177,6 +189,32 @@ class SubCommandsFunctions:
                 m.chat.id,
                 reply_to_message_id=int(m.command[-1]) if m.command[-1].isnumeric() else None,
             )
+
+    async def leave(self, bot, m):
+        args = m.command[1:] if m.command[0].startswith(self.cfg.name) else m.command[:]
+        if len(args) > 1:
+            chat = args[1]
+            try:
+                out = ""
+                chat = await bot.get_chat(args[1])
+                if "fancy" in args[2:]:
+                    me = await chat.get_member("me")
+                    perm = (me and me.permissions) or chat.permissions
+                    if perm.can_send_other_messages:
+                        await bot.send_sticker(chat.id, self.job_done)
+                        await bot.send_sticker(chat.id, self.swoosh)
+                        out = "Stickers sent."
+                    elif perm.can_send_messages:
+                        await bot.send_message(chat.id, "My job here is done.\n\n<i>*swoosh*</i>")
+                        out = "Couldn't send the stickers. Sent a message instead."
+                    else:
+                        out = "Couldn't send any message to the chat."
+                await chat.leave()
+                await m.reply(f"Left {format_chat(chat)}.\n{out}")
+            except UserNotParticipant:
+                await m.reply("Not joined that chat.")
+        else:
+            await m.reply("Enter ID of channel/group to leave.")
 
     async def not_recognized(self, bot, m):
         await m.reply(f"Command <code>{m.command[1]}</code> not recognized.")
