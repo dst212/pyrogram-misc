@@ -47,6 +47,7 @@ class Init:
             "You may get a reply. Please, be patient."
         )
     ):
+        cbname = name if isinstance(name, str) else name[0]
         # Feedback-related stuff
         support_topic = None
         if isinstance(support_chat, Iterable):
@@ -72,7 +73,7 @@ class Init:
 
         def reply_button(msg_id: int, text: str = "↖️ Reply"):
             return InlineKeyboardMarkup([[
-                InlineKeyboardButton(text, callback_data=f"{name} {msg_id}"),
+                InlineKeyboardButton(text, callback_data=f"{cbname} {msg_id}"),
             ]])
 
         # Quick reply
@@ -175,7 +176,7 @@ class Init:
         @bot.on_message(filters.private & reply_to_buttons & filters.regex(r"^(?!\/)"))
         async def _(bot, m):
             r = m.reply_to_message
-            rtmi = button_args(r, f"{name} ")[1:]
+            rtmi = button_args(r, f"{cbname} ")[1:]
             prefix = ""
             try:
                 rtmi = int(rtmi[0])
@@ -206,11 +207,11 @@ class Init:
                 raise e
 
         # Tell the users how to reply
-        @bot.on_callback_query(filters.regex(fr"^{name}"))
+        @bot.on_callback_query(filters.regex(fr"^{cbname}"))
         async def _(bot, c):
             await c.answer(
                 "You can reply to a message containing the \"↖️ Reply\" button to"
                 " directly forward your message to the support, without the need"
-                f" of the /{name} command.",
+                f" of the /{cbname} command.",
                 show_alert=True,
             )
