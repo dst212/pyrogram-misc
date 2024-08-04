@@ -69,7 +69,7 @@ def chat_name(chat: (Chat | User), show_username=True) -> str:
     if type(chat) not in (Chat, User):
         return str(chat)
     return (
-        (chat.first_name or chat.title)
+        (f"{chat.first_name} {chat.last_name}" if chat.last_name else chat.first_name or chat.title)
         + (f" (@{chat.username})" if show_username and chat.username else "")
     )
 
