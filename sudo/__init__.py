@@ -31,6 +31,7 @@ from pyrogram.types import (
 from pyrogram.errors import UserNotParticipant
 
 log = logging.getLogger(__name__)
+SPAWN = time.time()
 
 
 def format_time(time) -> str:
@@ -120,20 +121,20 @@ class SubCommandsFunctions:
         os.execl(sys.executable, sys.executable, *sys.argv)
 
     async def info(self, bot, m):
-        create_time = self._p.create_time() if self._p else 0
+        create_time = self._p.create_time() if self._p else SPAWN
         await m.reply(
             "<b>.•°• System information •°•.</b>\n\n"
             f"<i>Python path:</i> <code>{html.escape(sys.executable)}</code>\n"
             "<i>Python version:</i> "
             f"<code>{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} "
             f"({sys.implementation._multiarch})</code>\n"
-            f"<i>Process:</i> [</code><code>{os.getpid()}</code><code>] "
+            f"<i>Process:</i> [<code>{os.getpid()}</code>] "
             f"<code>{html.escape(" ".join(sys.argv))}</code>\n" +
             (f"<i>Memory:</i> <code>{round(self._p.memory_full_info().uss/1048576, 3)}MiB</code>\n"
-             "\n"
-             f"<i>Uptime:</i> <code>{format_time(time.time() - create_time)}</code>\n"
-             f"<i>Running since {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(create_time))}.</i>"
-             if self._p else "")
+             if self._p else "") +
+            "\n"
+            f"<i>Uptime:</i> <code>{format_time(time.time() - create_time)}</code>\n"
+            f"<i>Running since {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(create_time))}.</i>"
         )
 
     async def spam(self, bot, m):
