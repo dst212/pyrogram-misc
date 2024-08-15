@@ -61,6 +61,13 @@ class SubCommandsFunctions:
             "copy": self.copy,
             "leave": self.leave,
         }
+        if cfg.block_system:
+            log.info("Enabling block system...")
+            from . import block
+            self._block = block.init(self.cfg)
+            self.list["block"] = self._block.command_block
+            self.list["unblock"] = self._block.command_unblock
+            self.list["blocked"] = self._block.command_blocked
         self._p = psutil.Process() if psutil else None
         # Check overrides and enable prefixed commands
         for cmd in self.list:
@@ -242,6 +249,8 @@ class SudoConfig:
         # Enable error handling on the go instead of calling handle_errors()
         error_message: str = None,
         error_message_short: str = None,
+        # Enable block-system
+        block_system: bool = False,
     ):
         self.bot = bot
         self.name = name
@@ -258,6 +267,7 @@ class SudoConfig:
         else:
             self.error_message = "An error occurred."
             self.error_message_short = self.error_message
+        self.block_system = block_system
 
         self.fun = SubCommandsFunctions(self)
 
