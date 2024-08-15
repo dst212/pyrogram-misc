@@ -289,3 +289,14 @@ async def edit_copy(bot, m: Message, chat_id: int, prefix: str = "", suffix: str
         except Exception as e:
             print(e)
     return r
+
+
+# Retrieve the command sent within a message
+def get_command(text: (str | Message)) -> (str | None):
+    if isinstance(text, Message):
+        text = text.text or text.caption
+    if not text:
+        return None
+    at = text.find("@")
+    space = text.find(" ")
+    return text[:at] if at != -1 else text[:space] if space != -1 else text
