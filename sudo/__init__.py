@@ -200,11 +200,15 @@ class SubCommandsFunctions:
                 if "fancy" in args[2:]:
                     me = await chat.get_member("me")
                     perm = (me and me.permissions) or chat.permissions
-                    if perm.can_send_other_messages:
+                    privs = me and me.privileges
+                    if (
+                            (privs and privs.can_post_messages) or
+                            (perm and perm.can_send_other_messages)
+                    ):
                         await bot.send_sticker(chat.id, self.job_done)
                         await bot.send_sticker(chat.id, self.swoosh)
                         out = "Stickers sent."
-                    elif perm.can_send_messages:
+                    elif perm and perm.can_send_messages:
                         await bot.send_message(chat.id, "My job here is done.\n\n<i>*swoosh*</i>")
                         out = "Couldn't send the stickers. Sent a message instead."
                     else:
@@ -217,7 +221,7 @@ class SubCommandsFunctions:
             await m.reply("Enter ID of channel/group to leave.")
 
     async def not_recognized(self, bot, m):
-        await m.reply(f"Command <code>{m.command[1]}</code> not recognized.")
+        await m.reply(f"Command <code>{html.escape(m.command[1])}</code> not recognized.")
 
     async def default_reply(self, bot, m):
         await m.reply("Woodo!")
