@@ -47,7 +47,7 @@ class Init:
             "You may get a reply. Please, be patient."
         )
     ):
-        cbname = name if isinstance(name, str) else name[0]
+        cbname = name[0] if isinstance(name, Iterable) else name
         # Feedback-related stuff
         support_topic = None
         if isinstance(support_chat, Iterable):
@@ -56,7 +56,6 @@ class Init:
         def admin_reply_button(chat: int, message: int):
             return InlineKeyboardMarkup([[
                 InlineKeyboardButton("↖️ Reply", callback_data=f"{sudo.name} send {chat} {message}")
-                # TODO: block
             ]])
 
         def sent_message_buttons(chat: int, message: int):
