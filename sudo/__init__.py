@@ -8,6 +8,7 @@ from ..fun import (
 
 import asyncio
 import html
+import inspect
 import logging
 import os
 try:
@@ -157,7 +158,10 @@ class SubCommandsFunctions:
                 "Once you send the message, you won't be able to edit it."
             )
             return
-        chats = tuple(self.cfg.get_chats())
+        if inspect.iscoroutinefunction(self.cfg.get_chats):
+            chats = tuple(await self.cfg.get_chats())
+        else:
+            chats = tuple(self.cfg.get_chats())
         count = 0
         i = 0
         message_link = f"<a href=\"{m.reply_to_message.link}\">this message</a>"
