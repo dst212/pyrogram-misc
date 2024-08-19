@@ -28,7 +28,7 @@ async def get_chat(bot, chat_id: (int | str)) -> (Chat, int):
     except Exception:
         pass
     if not isinstance(chat_id, int):
-        if re.match(r"(-|)[0-9]+", chat_id):
+        if re.match(r"(-|)[0-9]+$", chat_id):
             chat_id = int(chat_id)
         elif chat:
             chat_id = chat.id

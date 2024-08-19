@@ -109,26 +109,26 @@ class Init:
 
         # Restore original buttons of the message
         @bot.on_callback_query(
-            from_sudoer & filters.regex(fr"^{sudo.name} btn [0-9].* [0-9].*$"))
+            from_sudoer & filters.regex(fr"^{sudo.name} btn [0-9]+ [0-9]+$"))
         async def _(bot, c):
             await c.edit_message_reply_markup(sent_message_buttons(*c.data.split(" ")[2:]))
 
         # Tell how to actually reply
         @bot.on_callback_query(
-            from_sudoer & filters.regex(fr"^{sudo.name} send [0-9].* [0-9].*$"))
+            from_sudoer & filters.regex(fr"^{sudo.name} send [0-9]+ [0-9]+$"))
         async def _(bot, c):
             user_name = chat_name(await bot.get_chat(int(c.data.split(" ")[2])))
             await c.answer(f"Reply to this to send a message to {user_name}.")
 
         # Ask for message deletion
         @bot.on_callback_query(
-            from_sudoer & filters.regex(fr"^{sudo.name} askdel [0-9].* [0-9].*$"))
+            from_sudoer & filters.regex(fr"^{sudo.name} askdel [0-9]+ [0-9]+$"))
         async def _(bot, c):
             await c.edit_message_reply_markup(askdel_buttons(*c.data.split(" ")[2:]))
 
         # Delete a sent message
         @bot.on_callback_query(
-            from_sudoer & filters.regex(fr"^{sudo.name} del [0-9].* [0-9].*$"))
+            from_sudoer & filters.regex(fr"^{sudo.name} del [0-9]+ [0-9]+$"))
         async def _(bot, c):
             await bot.delete_messages(*[int(i) for i in c.data.split(" ")[2:]])
             await c.edit_message_reply_markup(InlineKeyboardMarkup([[
@@ -137,7 +137,7 @@ class Init:
 
         # Show who deleted the message
         @bot.on_callback_query(
-            from_sudoer & filters.regex(fr"^{sudo.name} deleted [0-9].*$"))
+            from_sudoer & filters.regex(fr"^{sudo.name} deleted [0-9]+$"))
         async def _(bot, c):
             user = await bot.get_users(int(c.data.split(" ")[2]))
             user_name = "You" if user.id == c.from_user.id else chat_name(user)
