@@ -300,4 +300,4 @@ def get_command(text: (str | Message)) -> (str | None):
         return None
     at = text.find("@")
     space = text.find(" ")
-    return text[:at] if at != -1 else text[:space] if space != -1 else text
+    return str(text)[:at] if at != -1 else str(text)[:space] if space != -1 else text
