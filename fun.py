@@ -235,6 +235,14 @@ async def try_sending(bot, *args, **kwargs) -> bool:
     return await try_wait(bot.send_message, *args, **kwargs)
 
 
+# Try to delete a message, ignore if it fails
+async def try_delete(m: Message):
+    try:
+        await m.delete()
+    except Exception:
+        pass
+
+
 # Decorator to handle errors in a nicer way, usage:
 # bot.on_message = try_run_decorator(bot.on_message, report_error)
 def try_run_decorator(actual_decorator, handle_error):
