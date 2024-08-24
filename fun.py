@@ -219,12 +219,12 @@ async def try_wait(func: Callable, *args, **kwargs):
         try:
             ok = await func(*args, **kwargs) or True
         except FloodWait as e:
-            log.info(f"Waiting {e.value + 5} seconds before sending again...")
-            await asyncio.sleep(e.value + 5)
+            log.info(f"Waiting {e.value} seconds before sending again...")
+            await asyncio.sleep(e.value)
         except Exception as e:
             log.info(
-                "Couldn't send message to"
-                f" {kwargs.get('chat') or args[0] if len(args) > 0 else '?'}: {e}"
+                "Couldn't reach"
+                f" {kwargs.get("chat_id") or args[0] if len(args) > 0 else '?'}: {e}"
             )
             return False
     return ok
