@@ -52,7 +52,7 @@ def chat_link(
         return f"<a href=\"tg://user?id={item.id}\">" + (
             text or (
                 f"@{item.username}" if item.username else
-                html.escape(item.first_name)
+                html.escape(item.first_name) if item.first_name else "<i>&lt;unknown&gt;</i>"
             )
         ) + "</a>"
     if not text:
@@ -69,7 +69,8 @@ def chat_name(chat: (Chat | User), show_username=True) -> str:
     if type(chat) not in (Chat, User):
         return str(chat)
     return (
-        (f"{chat.first_name} {chat.last_name}" if chat.last_name else chat.first_name or chat.title)
+        (f"{chat.first_name} {chat.last_name}" if chat.last_name else chat.first_name or
+         ("" if isinstance(chat, User) else chat.title))
         + (f" (@{chat.username})" if show_username and chat.username else "")
     )
 
