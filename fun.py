@@ -92,8 +92,10 @@ async def is_admin(
     if user.id == m.chat.id:
         return True
     try:
-        member = await m.chat.get_member(user.id)
-        return member.privileges is not None if member else False
+        return member.status in (
+            ChatMemberStatus.ADMINISTRATOR,
+            ChatMemberStatus.OWNER
+        ) if (member := await m.chat.get_member(user.id)) else False
     except Exception:
         pass
     return False
