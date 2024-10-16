@@ -213,6 +213,18 @@ def button_args_inline(m, startswith: str = None):
     return data.split(" ")
 
 
+# Retry performing a specific task waiting for FloodWait limitations (doesn't catch any other exception)
+async def patiently(func: Callable, *args, **kwargs):
+    ok = False
+    while not ok:
+        try:
+            ok = await func(*args, **kwargs) or True
+        except FloodWait as e:
+            log.info(f"Waiting {e.value} seconds before sending again...")
+            await asyncio.sleep(e.value)
+    return ok
+
+
 # Retry performing a specific task waiting for FloodWait limitations
 async def try_wait(func: Callable, *args, **kwargs):
     ok = False
