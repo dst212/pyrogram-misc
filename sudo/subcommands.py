@@ -1,4 +1,4 @@
-from ..fun import chat_name, format_chat, try_wait
+from ..fun import sender_of, chat_name, format_chat, try_wait
 
 import asyncio
 import inspect
@@ -107,7 +107,7 @@ class SubCommandsFunctions:
         raise Exception("Test.")
 
     async def restart(self, bot, m):
-        sender = m.from_user or m.sender_chat
+        sender = sender_of(m)
         await m.reply("Restarting the bot.")
         log.info(f"[{sender.id}] {chat_name(sender)} restarted the bot.")
         await self.cfg.log(f"{format_chat(sender)} restarted the bot.")

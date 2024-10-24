@@ -1,6 +1,7 @@
 from .subcommands import SubCommandsFunctions
 
 from ..fun import (
+    sender_of,
     format_chat,
     quick_answer,
     try_wait,
@@ -81,7 +82,7 @@ class SudoConfig:
         if isinstance(item, Message):
             await item.reply(self.error_message)
             output = item.text or item.caption or "[Media]"
-            user = item.from_user or item.sender_chat
+            user = sender_of(item)
             chat = item.chat
         elif isinstance(item, CallbackQuery):
             await item.answer(self.error_message, show_alert=True)

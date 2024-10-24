@@ -20,6 +20,11 @@ from pyrogram.errors import FloodWait
 log = logging.getLogger(__name__)
 
 
+# Return the sender of a message
+def sender_of(m: Message):
+    return m.from_user or m.sender_chat or m.chat
+
+
 # User output formatting
 def format_chat(
         item: (Message | CallbackQuery | InlineQuery | User | Chat),
@@ -28,7 +33,7 @@ def format_chat(
     if item is None:
         return None
     if isinstance(item, Message):
-        item = item.from_user or item.sender_chat
+        item = sender_of(item)
     elif isinstance(item, CallbackQuery) or isinstance(item, InlineQuery):
         item = item.from_user
     if isinstance(item, User) or isinstance(item, Chat):
@@ -43,7 +48,7 @@ def chat_link(
     if item is None:
         return None
     if isinstance(item, Message):
-        item = item.from_user or item.sender_chat
+        item = sender_of(item)
     elif isinstance(item, CallbackQuery) or isinstance(item, InlineQuery):
         item = item.from_user
     if not isinstance(item, Chat) and not isinstance(item, User):
@@ -86,7 +91,7 @@ async def is_admin(
         if m is None:
             return False
     elif isinstance(m, Message):
-        user = m.from_user or m.sender_chat
+        user = sender_of(m)
     else:
         return False
     if user.id == m.chat.id:
@@ -298,10 +303,13 @@ async def edit_copy(bot, m: Message, chat_id: int, prefix: str = "", suffix: str
         m.copy,
         {"caption": f"{prefix}{m.caption.html}{suffix}" if m.caption else f"{prefix}{suffix}"},
     )
+    # Stopping before the actual needed space to avoid splitting HTML tags between messages
+    # No errors will be raised, but users will see the opening tag in the first message and
+    # the closing tag in the following one
     if m.text and len(text) > 4096:
-        text, next_text = f"{text[:4093]}...", f"...{text[4093:]}".strip()
+        text, next_text = f"{text[:4080]}...", f"...{text[4080:].strip()}"
     elif m.caption and len(text) > 1024:
-        text, next_text = f"{text[:1021]}...", f"...{text[1021:]}".strip()
+        text, next_text = f"{text[:1010]}...", f"...{text[1010:].strip()}"
     r = await func(
         chat_id,
         **text,

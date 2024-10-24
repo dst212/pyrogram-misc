@@ -1,4 +1,4 @@
-from ..fun import format_chat, get_command
+from ..fun import sender_of, format_chat, get_command
 
 import asyncio
 import html
@@ -46,7 +46,11 @@ class init:
         @sudo.bot.on_message(~filters.user(sudo.admins))
         async def _(bot, m):
             command = get_command(m.text or m.caption) or "*"
-            if self.can_use(m.chat, command) and self.can_use(m.from_user, command):
+            sender = sender_of(m)
+            if (
+                self.can_use(m.chat, command) and
+                (sender.id == m.chat.id or self.can_use(sender_of(m), command))
+            ):
                 m.continue_propagation()
 
         # Block users in "inline"
